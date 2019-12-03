@@ -189,11 +189,14 @@ class Studio(object):
         ax,
         image_name,
         edgeon=0,
-        assert_cached=False):
-        if ax is None:
-            fig,ax = plt.figure(),plt.gca()
-        else:
-            fig = ax.get_figure()
+        assert_cached=False,
+        plotImage=True):
+
+        if plotImage:
+            if ax is None:
+                fig,ax = plt.figure(),plt.gca()
+            else:
+                fig = ax.get_figure()
 
         if edgeon:
             print("Drawing an edgeon view, rotating theta = 90")
@@ -227,11 +230,12 @@ class Studio(object):
         self.final_image = self.produceImage(image_names)
 
         ## plot that RGB image and overlay scale bars/text
-        self.plotImage(ax,image_names)
+        if plotImage:
+            self.plotImage(ax,image_names)
 
-        ## save the image
-        if self.savefig:
-            self.saveFigure(ax,image_name)
+            ## save the image
+            if self.savefig:
+                self.saveFigure(ax,image_name)
 
         ## return these to their previous values, because why not?
         if edgeon:
@@ -520,21 +524,24 @@ class Studio(object):
         return pos_rot.astype(np.float32)
 
 ####### image utilities #######
-    def addScaleBar(self,image):
+    def addScaleBar(self,image,scale_line_length=None,scale_label_text=None):
 
         image_length =2*self.frame_half_width # kpc
         ## set scale bar length
-        if image_length > 15 : 
-            scale_line_length = 5
-            self.scale_label_text = r"$\mathbf{5 \, \rm{kpc}}$"
+        if scale_line_length==None:
+            if image_length > 15 : 
+                scale_line_length = 5
+                self.scale_label_text = r"$\mathbf{5 \, \rm{kpc}}$"
 
-        elif image_length > 1.5 : 
-            scale_line_length = 1.0 
-            self.scale_label_text = r"$\mathbf{1 \, \rm{kpc}}$"
+            elif image_length > 1.5 : 
+                scale_line_length = 1.0 
+                self.scale_label_text = r"$\mathbf{1 \, \rm{kpc}}$"
 
+            else:
+                scale_line_length = .1
+                self.scale_label_text = r"$\mathbf{100 \, \rm{pc}}$"
         else:
-            scale_line_length = .1
-            self.scale_label_text = r"$\mathbf{100 \, \rm{pc}}$"
+            self.scale_label_text = scale_label_text
 
         # Convert to pixel space
         length_per_pixel = (self.Xmax - self.Xmin) / self.npix_x
